@@ -1,0 +1,9 @@
+# Replace USERNAME after you rename the account
+title: Sungmin Ryu
+author: Sungmin Ryu
+email: duncan806@konkuk.ac.kr
+description: >-
+  Notes on RoPE, positional encoding, and what breaks when you perturb it.
+url: "https://duncan806.github.io"
+theme: minima
+markdown: kramdown
