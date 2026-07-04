@@ -35,7 +35,7 @@ I want to be precise about the role of quantization here, because it is easy to 
 
 So, the measurement. Two production models (Mistral-7B-v0.3 and Qwen2.5-7B), three datasets (WikiText-2, C4, PG-19), four context lengths from 2K to 16K. Perturb only the frequency buffer at inference time. Weights untouched.
 
-![Inflation heat-map, 24 cells](/assets/img/figure_1.png)
+![Inflation heat-map, 24 cells](/figure_1.png)
 
 Every one of the 24 cells inflates. The factors run from 3.1x to 214x, and they grow monotonically with context length in every row. INT4, which produces even larger clusters, reaches 655x.
 
@@ -53,11 +53,11 @@ log(inflation) ≈ 0.6 x Δlog θ, with Pearson r > 0.996,
 
 and the slope is nearly the same across both models and all context lengths (fitted range 0.57 to 0.68). Doubling the log-distance multiplies the inflation by about 1.52. I did not expect a number this clean from a trained system, and I still find it a little eerie.
 
-![Power law at codimension 2](/assets/img/figure_2.png)
+![Power law at codimension 2](/figure_2.png)
 
 Where you place the cluster matters even more than how big it is. At fixed cluster size and fixed log-distance, a single small cluster at the high-frequency end of the spectrum inflates perplexity about 2x. Clusters at the low-frequency end stay near baseline even when they cover 94% of the spectrum. The high-frequency channels are where attention has trained hardest on fine position distinctions, and injected collisions there break what the training built.
 
-![Spectral position dominates coverage](/assets/img/figure_3.png)
+![Spectral position dominates coverage](/figure_3.png)
 
 ## 4. Why you were safe all along
 
@@ -71,7 +71,7 @@ Which is to say: the operative distinction is not large relation versus small re
 
 The two known failure modes of RoPE now sit in one picture. Liu et al. (ICLR 2024) showed that the low-frequency end fails by under-rotation when you extrapolate past the training length, and the cure is base selection. The failure mode above lives at the high-frequency end and is guarded by structural distinctness, which the geometric form provides for free via transcendence. Two ends of the spectrum, two independent defenses, both accidental gifts of writing the schedule as one exponential.
 
-![Two failure modes, two ends of the spectrum](/assets/img/figure_4.png)
+![Two failure modes, two ends of the spectrum](/figure_4.png)
 
 If the post ended here, the story would be static. A hidden condition, a free theorem, everyone safe. Then I opened a hybrid model, and the story acquired a second act that partially inverts the first.
 
@@ -92,8 +92,6 @@ This is the third dog, and it completes the equation from Section 4. Vulnerabili
 Here is the measurement I keep coming back to. Take the sliding layers and sweep the RoPE base across six values from 3e3 to 1e6, measuring baseline perplexity at each. The curve is a U. Its minimum sits at 1e4. That is the value DeepMind shipped, so their tuning found the perplexity optimum, which is what good tuning does.
 
 Now inject the same codimension-2 cluster at each base and measure the inflation. At base 3e4, one step from the optimum, the injection costs 1.43x, and baseline perplexity is nearly unchanged (6.98 against 6.65). At base 1e4, the optimum itself, the same injection costs 197x.
-
-[그림 5 필요: base sweep U자 곡선 + 취약성 오버레이, 6월 노트북 Cell 10에서 export]
 
 Read that pair of numbers slowly. The point that looks best on the metric is the point where the model has bet everything on frequency distinctness. This is not a coincidence of two unrelated curves, or at least the layer evidence says it is not. A base of 1e4 inside a 1024-token window gives the layer a frequency set it can use tightly, every channel earning its place in position discrimination. That tight use is exactly what the perplexity optimum rewards, and exactly what leaves no redundancy to absorb a loss of distinctness. The same training pressure that pushes the metric down concentrates the reliance. One step away, at 3e4, the layer uses its frequencies more loosely, pays 5% perplexity for it, and shrugs off the injection that destroys the optimum.
 
